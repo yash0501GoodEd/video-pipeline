@@ -117,7 +117,7 @@ export const photoelectricEffect = {
         },
         {
           type: "gif",
-          src: "media/photoelectric/water-balloon-burst.gif",
+          src: "https://media1.tenor.com/m/oJaWtJU1XKMAAAAC/bexiga-estourando-balloon.gif",
           position: "right",
           width: 450,
           height: 400,
@@ -158,11 +158,19 @@ export const photoelectricEffect = {
       media: [
         {
           type: "image",
-          src: "media/photoelectric/bullet-analogy.svg",
+          src: "https://gsalvatovallverdu.gitlab.io/img/belowth.gif",
           position: "bottomRight",
           width: 300,
           animation: "slideUp",
           enterDelay: 30,
+        },
+        {
+          type: "image",
+          src: "https://gsalvatovallverdu.gitlab.io/img/aboveth.gif",
+          position: "bottomRight",
+          width: 300,
+          animation: "slideUp",
+          enterDelay: 150,
         },
       ],
     },
@@ -198,16 +206,16 @@ export const photoelectricEffect = {
           pause: "short",
         },
       ],
-      media: [
-        {
-          type: "svg",
-          src: "media/photoelectric/photon-momentum.svg",
-          position: "right",
-          width: 350,
-          animation: "slideLeft",
-          enterDelay: 50,
-        },
-      ],
+      // media: [
+      //   {
+      //     type: "svg",
+      //     src: "media/photoelectric/photon-momentum.svg",
+      //     position: "right",
+      //     width: 350,
+      //     animation: "slideLeft",
+      //     enterDelay: 50,
+      //   },
+      // ],
     },
 
     // ─── DIALOGUE: Red vs Violet ─────────────────
@@ -239,20 +247,20 @@ export const photoelectricEffect = {
       media: [
         {
           type: "svg",
-          src: "media/photoelectric/red-vs-violet.svg",
+          src: "https://www.electricity-magnetism.org/wp-content/uploads/2023/02/photoelectric-effect-animated-1.gif",
           position: "center",
           width: 900,
           animation: "fadeIn",
           enterDelay: 10,
         },
-        {
-          type: "svg",
-          src: "media/photoelectric/spectrum-bar.svg",
-          position: "bottomLeft",
-          width: 500,
-          animation: "slideUp",
-          enterDelay: 40,
-        },
+        // {
+        //   type: "svg",
+        //   src: "media/photoelectric/spectrum-bar.svg",
+        //   position: "bottomLeft",
+        //   width: 500,
+        //   animation: "slideUp",
+        //   enterDelay: 40,
+        // },
       ],
     },
 
@@ -272,16 +280,16 @@ export const photoelectricEffect = {
           pause: "medium",
         },
       ],
-      media: [
-        {
-          type: "image",
-          src: "media/photoelectric/efficiency-diagram.png",
-          position: "right",
-          width: 350,
-          animation: "fadeIn",
-          enterDelay: 30,
-        },
-      ],
+      // media: [
+      //   {
+      //     type: "image",
+      //     src: "media/photoelectric/efficiency-diagram.png",
+      //     position: "right",
+      //     width: 350,
+      //     animation: "fadeIn",
+      //     enterDelay: 30,
+      //   },
+      // ],
     },
 
     // ─── CALCULATION: Number of Photons ──────────
