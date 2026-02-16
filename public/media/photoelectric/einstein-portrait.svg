@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" fill="none">
+  <rect width="400" height="500" rx="20" fill="#0d1b2a"/>
+  <!-- Einstein silhouette -->
+  <circle cx="200" cy="160" r="70" fill="#1b2838" stroke="#4fc3f7" stroke-width="2"/>
+  <text x="200" y="170" text-anchor="middle" fill="#ffffff" font-size="60">🧑‍🔬</text>
+  <!-- Name -->
+  <text x="200" y="280" text-anchor="middle" fill="#e3f2fd" font-family="sans-serif" font-size="22" font-weight="700">Albert Einstein</text>
+  <text x="200" y="310" text-anchor="middle" fill="#90caf9" font-family="sans-serif" font-size="14" opacity="0.7">Nobel Prize 1921</text>
+  <!-- Photon packets -->
+  <g transform="translate(80, 350)">
+    <circle cx="40" cy="30" r="18" fill="#ffd54f" opacity="0.8"/>
+    <text x="40" y="35" text-anchor="middle" fill="#000" font-size="14" font-weight="700">hν</text>
+    <circle cx="120" cy="30" r="18" fill="#ffd54f" opacity="0.8"/>
+    <text x="120" y="35" text-anchor="middle" fill="#000" font-size="14" font-weight="700">hν</text>
+    <circle cx="200" cy="30" r="18" fill="#ffd54f" opacity="0.8"/>
+    <text x="200" y="35" text-anchor="middle" fill="#000" font-size="14" font-weight="700">hν</text>
+  </g>
+  <text x="200" y="430" text-anchor="middle" fill="#ffd54f" font-family="sans-serif" font-size="16" font-weight="600">Light = Energy Packets</text>
+</svg>

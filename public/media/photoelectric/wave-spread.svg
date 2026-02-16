@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 500" fill="none">
+  <rect width="700" height="500" rx="20" fill="#0a1628"/>
+  <g opacity="0.6">
+    <path d="M50 250 Q175 180 300 250 Q425 320 550 250 Q625 215 700 250" stroke="#4fc3f7" stroke-width="3" fill="none"/>
+    <path d="M50 280 Q175 210 300 280 Q425 350 550 280 Q625 245 700 280" stroke="#4fc3f7" stroke-width="2" fill="none" opacity="0.5"/>
+    <path d="M50 220 Q175 150 300 220 Q425 290 550 220 Q625 185 700 220" stroke="#4fc3f7" stroke-width="2" fill="none" opacity="0.5"/>
+  </g>
+  <rect x="500" y="150" width="150" height="200" rx="8" fill="#37474f" stroke="#78909c" stroke-width="2"/>
+  <text x="575" y="260" text-anchor="middle" fill="#b0bec5" font-family="sans-serif" font-size="14" font-weight="600">METAL</text>
+  <g opacity="0.4">
+    <line x1="350" y1="200" x2="500" y2="180" stroke="#ffb74d" stroke-width="1.5" stroke-dasharray="6 3"/>
+    <line x1="350" y1="250" x2="500" y2="250" stroke="#ffb74d" stroke-width="1.5" stroke-dasharray="6 3"/>
+    <line x1="350" y1="300" x2="500" y2="320" stroke="#ffb74d" stroke-width="1.5" stroke-dasharray="6 3"/>
+  </g>
+  <text x="200" y="420" text-anchor="middle" fill="#90caf9" font-family="sans-serif" font-size="18" font-weight="700">Wave Theory</text>
+  <text x="200" y="445" text-anchor="middle" fill="#64b5f6" font-family="sans-serif" font-size="14" opacity="0.7">Energy spreads across surface</text>
+</svg>
