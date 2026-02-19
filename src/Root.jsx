@@ -7,8 +7,21 @@ import { NEETVideoSchema, estimateTotalDuration } from "./schema";
 import { photoelectricEffect } from "./data/example-photoelectric";
 import { nandGateShort } from "./data/example-nand-short";
 import { raoultLaw } from "./data/example-raoult-law";
+import { bioGiftZiftShort } from "./data/example-gift-zift-short";
 
 const FPS = 30;
+
+// Run all configs through the schema parser so that Zod's .default()
+// values are applied before being passed to Remotion Studio's Schema
+// Editor. Without this, optional/missing string fields are `undefined`
+// which causes the "Cannot read properties of undefined (reading
+// 'startsWith')" crash in ZodSwitch.js.
+const parsedPhotoelectric = NEETVideoSchema.parse(photoelectricEffect);
+const parsedNandShort = NEETVideoSchema.parse(nandGateShort);
+const parsedRaoultLaw = NEETVideoSchema.parse(raoultLaw);
+const parsedBioGiftZift = NEETVideoSchema.parse(bioGiftZiftShort);
+
+// const FPS = 30;
 
 export const RemotionRoot = () => {
   return (
@@ -21,13 +34,13 @@ export const RemotionRoot = () => {
           component={NEETVideo}
           schema={NEETVideoSchema}
           durationInFrames={estimateTotalDuration(
-            photoelectricEffect.scenes,
+            parsedPhotoelectric.scenes,
             FPS
           )}
           fps={FPS}
           width={1920}
           height={1080}
-          defaultProps={photoelectricEffect}
+          defaultProps={parsedPhotoelectric}
         />
 
         {/* Long-form: Raoult's Law (Chemistry) */}
@@ -35,11 +48,11 @@ export const RemotionRoot = () => {
           id="Raoult-Law"
           component={NEETVideo}
           schema={NEETVideoSchema}
-          durationInFrames={estimateTotalDuration(raoultLaw.scenes, FPS)}
+          durationInFrames={estimateTotalDuration(parsedRaoultLaw.scenes, FPS)}
           fps={FPS}
           width={1920}
           height={1080}
-          defaultProps={raoultLaw}
+          defaultProps={parsedRaoultLaw}
         />
 
         {/* Short-form: NAND Gate Hack */}
@@ -48,13 +61,28 @@ export const RemotionRoot = () => {
           component={NEETVideo}
           schema={NEETVideoSchema}
           durationInFrames={estimateTotalDuration(
-            nandGateShort.scenes,
+            parsedNandShort.scenes,
             FPS
           )}
           fps={FPS}
           width={1080}
           height={1920}
-          defaultProps={nandGateShort}
+          defaultProps={parsedNandShort}
+        />
+
+        {/* Short-form: GIFT vs ZIFT (Biology) */}
+        <Composition
+          id="GIFT-ZIFT-Short"
+          component={NEETVideo}
+          schema={NEETVideoSchema}
+          durationInFrames={estimateTotalDuration(
+            parsedBioGiftZift.scenes,
+            FPS
+          )}
+          fps={FPS}
+          width={1080}
+          height={1920}
+          defaultProps={parsedBioGiftZift}
         />
       </Folder>
 

@@ -1,0 +1,21 @@
+<svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- GIFT Row -->
+  <text x="50" y="80" fill="#00ffff" font-family="Arial" font-weight="900" font-size="64">G</text>
+  <text x="120" y="70" fill="#ffffffcc" font-family="Arial" font-size="28">amete</text>
+  <path d="M250,60 L350,60" fill="none" stroke="white" stroke-width="4" stroke-dasharray="10,5"/>
+  <rect x="360" y="30" width="160" height="60" rx="10" fill="none" stroke="#facc15" stroke-width="6"/>
+  <text x="395" y="72" fill="#facc15" font-family="Arial" font-weight="bold" font-size="32">TUBE</text>
+
+  <!-- ZIFT Row -->
+  <text x="50" y="200" fill="#ff00ff" font-family="Arial" font-weight="900" font-size="64">Z</text>
+  <text x="120" y="190" fill="#ffffffcc" font-family="Arial" font-size="28">ygote</text>
+  <path d="M250,180 L350,180" fill="none" stroke="white" stroke-width="4" stroke-dasharray="10,5"/>
+  <rect x="360" y="150" width="160" height="60" rx="10" fill="none" stroke="#facc15" stroke-width="6"/>
+  <text x="395" y="192" fill="#facc15" font-family="Arial" font-weight="bold" font-size="32">TUBE</text>
+
+  <!-- IUT Row (The Outlier) -->
+  <text x="50" y="320" fill="#00ff00" font-family="Arial" font-weight="900" font-size="64">IUT</text>
+  <path d="M250,300 L350,300" fill="none" stroke="white" stroke-width="4" stroke-dasharray="10,5"/>
+  <rect x="360" y="270" width="180" height="60" rx="10" fill="none" stroke="#00ff00" stroke-width="6"/>
+  <text x="382" y="312" fill="#00ff00" font-family="Arial" font-weight="bold" font-size="32">UTERUS</text>
+</svg>

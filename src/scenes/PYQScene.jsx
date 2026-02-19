@@ -27,10 +27,10 @@ export const PYQScene = ({ scene, theme, characters }) => {
       <Background variant="grid" theme={theme} />
 
       {/* PYQ Banner */}
-      <div
+      {/* <div
         style={{
           position: "absolute",
-          top: 30,
+          top: 100,
           left: "50%",
           transform: "translateX(-50%)",
           opacity: interpolate(frame, [0, 10], [0, 1], {
@@ -64,7 +64,7 @@ export const PYQScene = ({ scene, theme, characters }) => {
             PYQ CHALLENGE
           </span>
         </div>
-      </div>
+      </div> */}
 
       <div
         style={{
@@ -84,6 +84,7 @@ export const PYQScene = ({ scene, theme, characters }) => {
           year={scene.year}
           exam={scene.exam}
           question={scene.question}
+          questionImage={scene.questionImage}
           options={scene.options}
           solution={scene.solution}
           theme={theme}

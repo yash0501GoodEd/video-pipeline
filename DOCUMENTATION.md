@@ -263,11 +263,16 @@ npm run dev
 ### Step 6: Generate voiceover (optional)
 
 ```bash
-# Create .env with your API key
+# Create .env with your API key(s)
 echo "ELEVENLABS_API_KEY=your_key_here" > .env
+# OR for Sarvam AI:
+echo "SARVAM_API_KEY=your_key_here" >> .env
 
-# Generate MP3s for all scenes
+# Generate MP3s using ElevenLabs (default)
 node --env-file=.env scripts/generate-voiceover.mjs src/data/my-new-video.js
+
+# Generate MP3s using Sarvam AI
+node --env-file=.env scripts/generate-voiceover.mjs src/data/my-new-video.js --provider=sarvam
 ```
 
 The script outputs `audio` config entries — paste them into each scene.
@@ -592,13 +597,25 @@ const color = getSpeakerColor(theme, "teacher");
 
 ### Overview
 
-The `scripts/generate-voiceover.mjs` script reads your video config, extracts `lines[]` text from each scene, sends it to ElevenLabs TTS API, and saves MP3 files.
+The `scripts/generate-voiceover.mjs` script reads your video config, extracts `lines[]` text from each scene, sends it to a TTS provider (ElevenLabs or Sarvam AI), and saves MP3 files.
+
+### Supported Providers
+
+| Provider    | Best For                  | API Key Env Variable    |
+| ----------- | ------------------------- | ----------------------- |
+| ElevenLabs  | English, multilingual     | `ELEVENLABS_API_KEY`    |
+| Sarvam AI   | Hindi, Hinglish, Indic    | `SARVAM_API_KEY`        |
 
 ### Setup
 
 ```bash
 # 1. Create .env file at project root
+
+# For ElevenLabs:
 echo "ELEVENLABS_API_KEY=sk_your_key_here" > .env
+
+# For Sarvam AI:
+echo "SARVAM_API_KEY=your_key_here" >> .env
 
 # 2. Install duration measurement library (optional, has fallback)
 npm install mediabunny
@@ -607,17 +624,31 @@ npm install mediabunny
 ### Usage
 
 ```bash
-node --env-file=.env scripts/generate-voiceover.mjs <config-path> [--voice-id=VOICE_ID]
+node --env-file=.env scripts/generate-voiceover.mjs <config-path> [options]
 ```
+
+**Options:**
+
+| Flag                         | Description                                      |
+| ---------------------------- | ------------------------------------------------ |
+| `--provider=elevenlabs|sarvam` | Override TTS provider                          |
+| `--voice-id=VOICE_ID`        | ElevenLabs voice ID override                    |
+| `--speaker=SPEAKER_NAME`     | Sarvam AI speaker override (e.g. shubh, roopa)  |
 
 **Examples:**
 
 ```bash
-# Use default voice
+# ElevenLabs (default)
 node --env-file=.env scripts/generate-voiceover.mjs src/data/example-photoelectric.js
 
-# Specify a custom ElevenLabs voice
+# ElevenLabs with custom voice
 node --env-file=.env scripts/generate-voiceover.mjs src/data/my-video.js --voice-id=pNInz6obpgDQGcFmaJgB
+
+# Sarvam AI (default male voice: shubh)
+node --env-file=.env scripts/generate-voiceover.mjs src/data/my-video.js --provider=sarvam
+
+# Sarvam AI with female voice
+node --env-file=.env scripts/generate-voiceover.mjs src/data/my-video.js --provider=sarvam --speaker=roopa
 ```
 
 ### Output
@@ -645,18 +676,63 @@ The script also prints `audio` config entries to paste into your data file:
 
 ### Voice Configuration
 
-Configure TTS settings in your video config:
+#### ElevenLabs (default)
 
 ```javascript
 voiceover: {
   enabled: true,
-  voiceId: "pNInz6obpgDQGcFmaJgB",     // ElevenLabs voice ID
-  model: "eleven_multilingual_v2",       // Best for Hinglish
-  stability: 0.5,                        // 0-1, higher = more consistent
-  similarityBoost: 0.75,                 // 0-1, higher = more similar to original
-  style: 0.3,                            // 0-1, higher = more expressive
+  provider: "elevenlabs",
+  elevenlabs: {
+    voiceId: "pNInz6obpgDQGcFmaJgB",     // ElevenLabs voice ID
+    model: "eleven_multilingual_v2",       // Best for Hinglish
+    stability: 0.5,                        // 0-1, higher = more consistent
+    similarityBoost: 0.75,                 // 0-1, higher = more similar to original
+    style: 0.3,                            // 0-1, higher = more expressive
+  },
 }
 ```
+
+#### Sarvam AI
+
+```javascript
+voiceover: {
+  enabled: true,
+  provider: "sarvam",
+  sarvam: {
+    speaker: "shubh",                      // Voice name (shubh=male, roopa=female)
+    model: "bulbul:v3",                    // "bulbul:v2" | "bulbul:v3"
+    targetLanguageCode: "hi-IN",           // BCP-47 language code
+    pace: 1.1,                             // 0.5-2.0 (bulbul:v3)
+    sampleRate: "48000",                   // Hz: 8000-48000
+    temperature: 0.6,                      // 0.01-2.0 (bulbul:v3 only)
+  },
+}
+```
+
+#### Sarvam AI Speakers
+
+| Use Case      | Speaker   | Gender |
+| ------------- | --------- | ------ |
+| Male default  | `shubh`   | Male   |
+| Female default | `roopa`  | Female |
+
+All available speakers: Shubh, Aditya, Ritu, Priya, Neha, Rahul, Pooja, Rohan, Simran, Kavya, Amit, Dev, Ishita, Shreya, Ratan, Varun, Manan, Sumit, Roopa, Kabir, Aayan, Ashutosh, Advait, Amelia, Sophia, Anand, Tanya, Tarun, Sunny, Mani, Gokul, Vijay, Shruti, Suhani, Mohit, Kavitha, Rehan, Soham, Rupali.
+
+#### Sarvam AI Supported Languages
+
+| Code    | Language   |
+| ------- | ---------- |
+| `hi-IN` | Hindi      |
+| `en-IN` | English (Indian) |
+| `bn-IN` | Bengali    |
+| `gu-IN` | Gujarati   |
+| `kn-IN` | Kannada    |
+| `ml-IN` | Malayalam  |
+| `mr-IN` | Marathi    |
+| `od-IN` | Odia       |
+| `pa-IN` | Punjabi    |
+| `ta-IN` | Tamil      |
+| `te-IN` | Telugu     |
 
 ### How Duration Estimation Works
 

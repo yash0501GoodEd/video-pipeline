@@ -1,13 +1,16 @@
 import React from "react";
-import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
+import { useCurrentFrame, useVideoConfig, interpolate, spring, Img, staticFile } from "remotion";
 
 /**
  * PYQCard - Previous Year Question card with animated reveal.
+ * Supports an optional `questionImage` field (local path or URL) rendered
+ * between the question text and answer options.
  */
 export const PYQCard = ({
   year,
   exam = "NEET",
   question,
+  questionImage,
   options = [],
   solution,
   theme,
@@ -59,7 +62,7 @@ export const PYQCard = ({
           <span
             style={{
               color: theme.accent,
-              fontSize: 16,
+              fontSize: 28,
               fontWeight: 700,
               fontFamily: "'Inter', sans-serif",
               letterSpacing: 1,
@@ -78,7 +81,7 @@ export const PYQCard = ({
           <span
             style={{
               color: theme.primary,
-              fontSize: 14,
+              fontSize: 28,
               fontWeight: 600,
               fontFamily: "'Inter', sans-serif",
             }}
@@ -92,15 +95,48 @@ export const PYQCard = ({
       <div
         style={{
           color: theme.text,
-          fontSize: 28,
+          fontSize: 48,
           fontWeight: 600,
           fontFamily: "'Inter', sans-serif",
           lineHeight: 1.5,
-          marginBottom: options.length > 0 ? 24 : 0,
+          marginBottom: questionImage ? 16 : options.length > 0 ? 24 : 0,
         }}
       >
         {question}
       </div>
+
+      {/* Question Image */}
+      {questionImage && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: options.length > 0 ? 24 : 0,
+            opacity: interpolate(
+              frame,
+              [startDelay + 8, startDelay + 20],
+              [0, 1],
+              { extrapolateRight: "clamp", extrapolateLeft: "clamp" }
+            ),
+            transform: `scale(${interpolate(
+              spring({ frame: Math.max(0, frame - startDelay - 8), fps, config: { damping: 15, stiffness: 120 } }),
+              [0, 1],
+              [0.9, 1]
+            )})`,
+          }}
+        >
+          <Img
+            src={questionImage.startsWith("http") ? questionImage : staticFile(questionImage)}
+            style={{
+              maxWidth: "100%",
+              maxHeight: 300,
+              objectFit: "contain",
+              borderRadius: 12,
+              border: `1px solid ${theme.primary}33`,
+            }}
+          />
+        </div>
+      )}
 
       {/* Options */}
       {options.length > 0 && (
@@ -148,7 +184,7 @@ export const PYQCard = ({
                   style={{
                     color:
                       isRevealTime && isCorrect ? theme.accent : theme.textMuted,
-                    fontSize: 18,
+                    fontSize: 30,
                     fontWeight: 700,
                     fontFamily: "'Inter', sans-serif",
                     minWidth: 30,
@@ -160,7 +196,7 @@ export const PYQCard = ({
                   style={{
                     color:
                       isRevealTime && isCorrect ? theme.accent : theme.text,
-                    fontSize: 22,
+                    fontSize: 36,
                     fontWeight: 500,
                     fontFamily: "'Inter', sans-serif",
                   }}

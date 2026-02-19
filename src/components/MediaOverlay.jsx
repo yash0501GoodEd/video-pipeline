@@ -73,6 +73,9 @@ const MediaItem = ({ item }) => {
   const enterDelay = item.enterDelay || 0;
   const localFrame = Math.max(0, frame - enterDelay);
 
+  const posStyle =
+    POSITION_STYLES[item.position || "center"] || POSITION_STYLES.center;
+
   // Entrance animation
   let animStyle = {};
   if (item.animation !== "none") {
@@ -82,23 +85,26 @@ const MediaItem = ({ item }) => {
       config: { damping: 15, stiffness: 120 },
     });
 
+    // Start with the base transform from POSITION_STYLES (if any)
+    let transform = posStyle.transform || "";
+
     if (item.animation === "fadeIn" || !item.animation) {
       animStyle.opacity = interpolate(progress, [0, 1], [0, item.opacity ?? 1]);
     } else if (item.animation === "scaleUp") {
       const scale = interpolate(progress, [0, 1], [0.5, 1]);
-      animStyle.transform = `${animStyle.transform || ""} scale(${scale})`.trim();
+      animStyle.transform = `${transform} scale(${scale})`.trim();
       animStyle.opacity = interpolate(progress, [0, 1], [0, item.opacity ?? 1]);
     } else if (item.animation === "slideLeft") {
       const x = interpolate(progress, [0, 1], [100, 0]);
-      animStyle.transform = `${animStyle.transform || ""} translateX(${x}px)`.trim();
+      animStyle.transform = `${transform} translateX(${x}px)`.trim();
       animStyle.opacity = interpolate(progress, [0, 1], [0, item.opacity ?? 1]);
     } else if (item.animation === "slideRight") {
       const x = interpolate(progress, [0, 1], [-100, 0]);
-      animStyle.transform = `${animStyle.transform || ""} translateX(${x}px)`.trim();
+      animStyle.transform = `${transform} translateX(${x}px)`.trim();
       animStyle.opacity = interpolate(progress, [0, 1], [0, item.opacity ?? 1]);
     } else if (item.animation === "slideUp") {
       const y = interpolate(progress, [0, 1], [60, 0]);
-      animStyle.transform = `${animStyle.transform || ""} translateY(${y}px)`.trim();
+      animStyle.transform = `${transform} translateY(${y}px)`.trim();
       animStyle.opacity = interpolate(progress, [0, 1], [0, item.opacity ?? 1]);
     }
   } else {
@@ -113,13 +119,12 @@ const MediaItem = ({ item }) => {
   // Don't show before enter delay
   if (frame < enterDelay) return null;
 
-  const posStyle = POSITION_STYLES[item.position || "center"] || POSITION_STYLES.center;
-
   const sizeStyle = {
     ...(item.width ? { width: item.width } : {}),
     ...(item.height ? { height: item.height } : {}),
     borderRadius: item.borderRadius || 0,
     objectFit: item.objectFit || "contain",
+    maxWidth: "none", // Bypass Tailwind's default max-width: 100%
   };
 
   const wrapperStyle = {

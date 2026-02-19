@@ -89,23 +89,7 @@ export const SceneRenderer = ({ scene, theme, characters, globalBgMusic }) => {
         <MediaOverlay media={scene.media} />
       )}
 
-      {/* Bottom gradient for label readability */}
-      {(scene.sceneTitle || scene.subtitle) && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 220,
-            background: "linear-gradient(transparent, rgba(0,0,0,0.5))",
-            zIndex: 18,
-            pointerEvents: "none",
-          }}
-        />
-      )}
-
-      {/* Scene label — concept title + subtitle (lower-third) */}
+      {/* Scene label — concept title + subtitle (top-center, below TopicBadge) */}
       <SceneLabel
         title={scene.sceneTitle}
         subtitle={scene.subtitle}

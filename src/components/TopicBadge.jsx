@@ -57,7 +57,7 @@ export const TopicBadge = ({ subject, chapter, theme }) => {
         <span
           style={{
             color: theme.primary,
-            fontSize: 16,
+            fontSize: 26,
             fontWeight: 600,
             fontFamily: "'Inter', sans-serif",
             textTransform: "uppercase",
@@ -70,7 +70,7 @@ export const TopicBadge = ({ subject, chapter, theme }) => {
         <span
           style={{
             color: theme.secondary,
-            fontSize: 15,
+            fontSize: 24,
             fontWeight: 500,
             fontFamily: "'Inter', sans-serif",
           }}

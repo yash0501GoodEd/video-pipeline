@@ -2,9 +2,9 @@ import React from "react";
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
 
 /**
- * SceneLabel — Lower-third style label showing the current concept/topic.
- * Provides visual context without cluttering the screen with dialogue text.
- * Appears with a frosted-glass slide-in animation.
+ * SceneLabel — Centered top banner showing the current concept/topic.
+ * Sits directly below the TopicBadge (subject/chapter indicator).
+ * Appears with a frosted-glass slide-down animation.
  */
 export const SceneLabel = ({ title, subtitle, theme }) => {
   const frame = useCurrentFrame();
@@ -20,10 +20,10 @@ export const SceneLabel = ({ title, subtitle, theme }) => {
   });
 
   const opacity = interpolate(entry, [0, 1], [0, 1]);
-  const x = interpolate(entry, [0, 1], [-40, 0]);
+  const y = interpolate(entry, [0, 1], [-24, 0]);
 
-  // Fade out near end of scene for clean transition
-  const fadeOut = interpolate(frame, [0, 30], [0, 1], {
+  // Fade in from scene start for clean entry
+  const fadeOut = interpolate(frame, [0, 20], [0, 1], {
     extrapolateRight: "clamp",
   });
 
@@ -31,11 +31,19 @@ export const SceneLabel = ({ title, subtitle, theme }) => {
     <div
       style={{
         position: "absolute",
-        bottom: 80,
-        left: 60,
+        top: 110,
+        left: "50%",
+        transform: `translateX(-50%) translateY(${y}px)`,
         zIndex: 20,
         opacity: opacity * fadeOut,
-        transform: `translateX(${x}px)`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 6,
+        width: "100%",
+        paddingLeft: 60,
+        paddingRight: 60,
+        boxSizing: "border-box",
       }}
     >
       <div
@@ -44,24 +52,26 @@ export const SceneLabel = ({ title, subtitle, theme }) => {
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
           border: `1px solid ${theme.primary}33`,
-          borderLeft: `4px solid ${theme.accent}`,
-          borderRadius: "0 14px 14px 0",
-          padding: "18px 32px",
+          borderBottom: `3px solid ${theme.accent}`,
+          borderRadius: 14,
+          padding: "14px 36px",
           display: "flex",
           flexDirection: "column",
-          gap: 6,
-          maxWidth: 700,
+          alignItems: "center",
+          gap: 5,
+          maxWidth: 820,
         }}
       >
         {title && (
           <span
             style={{
               color: theme.text,
-              fontSize: 30,
+              fontSize: 44,
               fontWeight: 700,
               fontFamily: "'Inter', sans-serif",
               letterSpacing: 0.5,
               lineHeight: 1.3,
+              textAlign: "center",
             }}
           >
             {title}
@@ -71,10 +81,11 @@ export const SceneLabel = ({ title, subtitle, theme }) => {
           <span
             style={{
               color: theme.textMuted,
-              fontSize: 18,
+              fontSize: 36,
               fontWeight: 500,
               fontFamily: "'Inter', sans-serif",
               lineHeight: 1.4,
+              textAlign: "center",
             }}
           >
             {subtitle}

@@ -30,7 +30,7 @@ export const HookScene = ({ scene, theme, characters }) => {
       <Background variant={bgVariant} theme={theme} />
 
       {/* Dramatic hook indicator */}
-      <div
+      {/* <div
         style={{
           position: "absolute",
           top: 40,
@@ -62,7 +62,7 @@ export const HookScene = ({ scene, theme, characters }) => {
             🎯 HOOK
           </span>
         </div>
-      </div>
+      </div> */}
 
       {/* Lines container */}
       <div

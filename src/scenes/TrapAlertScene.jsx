@@ -47,8 +47,9 @@ export const TrapAlertScene = ({ scene, theme, characters }) => {
           inset: 0,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
+          top: 300,
+          // justifyContent: "center",
+          // alignItems: "center",
           padding: "60px 80px",
           gap: 30,
           zIndex: 5,
@@ -74,7 +75,7 @@ export const TrapAlertScene = ({ scene, theme, characters }) => {
           <AnimatedText
             text={trapDescription}
             color="#ff8a80"
-            fontSize={30}
+            fontSize={36}
             variant="typewriter"
             startDelay={18}
             fontWeight={600}

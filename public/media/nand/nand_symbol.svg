@@ -1,0 +1,19 @@
+<svg width="300" height="200" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Inputs -->
+  <line x1="20" y1="70" x2="100" y2="70" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  <line x1="20" y1="130" x2="100" y2="130" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- NAND Body (D-shape) -->
+  <path d="M100,40 L160,40 C220,40 220,160 160,160 L100,160 Z" fill="none" stroke="white" stroke-width="6" stroke-linejoin="round"/>
+  
+  <!-- Output Bubble -->
+  <circle cx="230" cy="100" r="12" fill="none" stroke="white" stroke-width="6"/>
+  
+  <!-- Output Line -->
+  <line x1="242" y1="100" x2="280" y2="100" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Text Labels -->
+  <text x="35" y="60" fill="#00ffff" font-family="Arial" font-weight="bold" font-size="24">A</text>
+  <text x="35" y="155" fill="#00ffff" font-family="Arial" font-weight="bold" font-size="24">B</text>
+  <text x="250" y="85" fill="#ff00ff" font-family="Arial" font-weight="bold" font-size="24">Y</text>
+</svg>

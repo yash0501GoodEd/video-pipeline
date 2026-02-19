@@ -6,7 +6,7 @@ import { z } from "zod";
 
 const MediaItemSchema = z.object({
   type: z.enum(["image", "svg", "gif", "video"]),
-  src: z.string(), // path relative to public/, e.g. "media/photon.png"
+  src: z.string().default(""), // path relative to public/, e.g. "media/photon.png"
   position: z
     .enum([
       "center",
@@ -32,30 +32,52 @@ const MediaItemSchema = z.object({
   muted: z.boolean().default(true),       // for video
   objectFit: z.enum(["contain", "cover", "fill"]).default("contain"),
   duration: z.number().optional(),        // frames — if omitted, lasts full scene
-  caption: z.string().optional(),         // small label under media
+  caption: z.string().default(""),         // small label under media
 });
 
 // ─── Voiceover Schema ────────────────────────────────────────
 
-const VoiceoverConfigSchema = z.object({
-  enabled: z.boolean().default(false),
-  voiceId: z.string().optional(),         // ElevenLabs voice ID
+const ElevenLabsConfigSchema = z.object({
+  voiceId: z.string().default(""),         // ElevenLabs voice ID
   model: z.string().default("eleven_multilingual_v2"),
   stability: z.number().min(0).max(1).default(0.5),
   similarityBoost: z.number().min(0).max(1).default(0.75),
   style: z.number().min(0).max(1).default(0.3),
 });
 
+const SarvamConfigSchema = z.object({
+  speaker: z.string().default("shubh"),                         // Sarvam voice name
+  model: z.enum(["bulbul:v2", "bulbul:v3"]).default("bulbul:v3"),
+  targetLanguageCode: z.string().default("hi-IN"),              // BCP-47 language code
+  pace: z.number().min(0.5).max(2.0).default(1.1),
+  sampleRate: z.enum(["8000", "16000", "22050", "24000", "32000", "44100", "48000"]).default("48000"),
+  temperature: z.number().min(0.01).max(2.0).default(0.6),
+});
+
+const VoiceoverConfigSchema = z.object({
+  enabled: z.boolean().default(false),
+  provider: z.enum(["elevenlabs", "sarvam"]).default("elevenlabs"),
+  // ElevenLabs settings (legacy top-level fields still supported)
+  voiceId: z.string().default(""),
+  model: z.string().default("eleven_multilingual_v2"),
+  stability: z.number().min(0).max(1).default(0.5),
+  similarityBoost: z.number().min(0).max(1).default(0.75),
+  style: z.number().min(0).max(1).default(0.3),
+  // Provider-specific nested config
+  elevenlabs: ElevenLabsConfigSchema.default({}),
+  sarvam: SarvamConfigSchema.default({}),
+});
+
 const SceneAudioSchema = z.object({
-  src: z.string(),             // path relative to public/, e.g. "voiceover/photoelectric/scene-0.mp3"
+  src: z.string().default(""),             // path relative to public/, e.g. "voiceover/photoelectric/scene-0.mp3"
   durationInFrames: z.number().optional(), // measured after generation
 });
 
 // ─── Scene Schemas ───────────────────────────────────────────
 
 const SpeakerLineSchema = z.object({
-  speaker: z.string(),
-  text: z.string(),
+  speaker: z.string().default(""),
+  text: z.string().default(""),
   emotion: z
     .enum(["neutral", "excited", "stressed", "happy", "shouting", "curious"])
     .default("neutral"),
@@ -63,20 +85,20 @@ const SpeakerLineSchema = z.object({
 });
 
 const FormulaItemSchema = z.object({
-  label: z.string(),
-  expression: z.string(),
+  label: z.string().default(""),
+  expression: z.string().default(""),
   highlight: z.boolean().default(false),
 });
 
 const BulletItemSchema = z.object({
   number: z.number().optional(),
-  text: z.string(),
-  icon: z.string().optional(),
+  text: z.string().default(""),
+  icon: z.string().default(""),
 });
 
 const PYQOptionSchema = z.object({
-  label: z.string(),
-  text: z.string(),
+  label: z.string().default(""),
+  text: z.string().default(""),
   isCorrect: z.boolean().default(false),
 });
 
@@ -84,11 +106,11 @@ const PYQOptionSchema = z.object({
 const BaseScene = {
   layoutVariant: z.number().int().min(0).max(3).default(0),
   backgroundVariant: z.enum(["gradient", "grid", "particles", "waves"]).default("gradient"),
-  sceneTitle: z.string().optional(),            // concept title shown on screen
-  subtitle: z.string().optional(),              // secondary label below title
-  media: z.array(MediaItemSchema).optional(),   // visual assets
-  audio: SceneAudioSchema.optional(),           // generated voiceover
-  bgMusic: z.string().optional(),               // background music path
+  sceneTitle: z.string().default(""),            // concept title shown on screen
+  subtitle: z.string().default(""),              // secondary label below title
+  media: z.array(MediaItemSchema).default([]),   // visual assets
+  audio: SceneAudioSchema.default({ src: "" }),           // generated voiceover
+  bgMusic: z.string().default(""),               // background music path
 };
 
 const HookSceneSchema = z.object({
@@ -107,23 +129,23 @@ const NarratorSceneSchema = z.object({
   ...BaseScene,
   type: z.literal("narrator"),
   lines: z.array(SpeakerLineSchema).min(1),
-  visualCue: z.string().optional(), // emoji or keyword for illustration
+  visualCue: z.string().default(""), // emoji or keyword for illustration
 });
 
 const AnalogySceneSchema = z.object({
   ...BaseScene,
   type: z.literal("analogy"),
   lines: z.array(SpeakerLineSchema).min(1),
-  analogyTitle: z.string(),
+  analogyTitle: z.string().default(""),
   analogyIcon: z.string().default("💡"),
   comparison: z
     .object({
-      left: z.string(),
-      right: z.string(),
-      leftLabel: z.string(),
-      rightLabel: z.string(),
+      left: z.string().default(""),
+      right: z.string().default(""),
+      leftLabel: z.string().default(""),
+      rightLabel: z.string().default(""),
     })
-    .optional(),
+    .default({ left: "", right: "", leftLabel: "", rightLabel: "" }),
 });
 
 const FormulaSceneSchema = z.object({
@@ -138,8 +160,8 @@ const TrapAlertSceneSchema = z.object({
   ...BaseScene,
   type: z.literal("trapAlert"),
   lines: z.array(SpeakerLineSchema).min(1),
-  trapDescription: z.string(),
-  correctApproach: z.string().optional(),
+  trapDescription: z.string().default(""),
+  correctApproach: z.string().default(""),
 });
 
 const PYQSceneSchema = z.object({
@@ -148,9 +170,10 @@ const PYQSceneSchema = z.object({
   lines: z.array(SpeakerLineSchema).min(1),
   year: z.number(),
   exam: z.string().default("NEET"),
-  question: z.string(),
-  options: z.array(PYQOptionSchema).optional(),
-  solution: z.string().optional(),
+  question: z.string().default(""),
+  questionImage: z.string().optional(),
+  options: z.array(PYQOptionSchema).default([]),
+  solution: z.string().default(""),
 });
 
 const SummarySceneSchema = z.object({
@@ -167,8 +190,8 @@ const CalculationSceneSchema = z.object({
   lines: z.array(SpeakerLineSchema).min(1),
   steps: z.array(
     z.object({
-      label: z.string(),
-      expression: z.string(),
+      label: z.string().default(""),
+      expression: z.string().default(""),
     })
   ),
 });
@@ -177,7 +200,7 @@ const OutroSceneSchema = z.object({
   ...BaseScene,
   type: z.literal("outro"),
   lines: z.array(SpeakerLineSchema).min(1),
-  nextVideoTeaser: z.string().optional(),
+  nextVideoTeaser: z.string().default(""),
   ctaText: z.string().default("Subscribe for more!"),
 });
 
@@ -197,23 +220,23 @@ const SceneSchema = z.discriminatedUnion("type", [
 // ─── Character Schema ────────────────────────────────────────
 
 const CharacterSchema = z.object({
-  name: z.string(),
+  name: z.string().default(""),
   role: z.enum(["teacher", "student"]),
-  color: z.string().optional(), // override per character
-  avatar: z.string().optional(), // emoji or image path
+  color: z.string().default(""), // override per character
+  avatar: z.string().default(""), // emoji or image path
 });
 
 // ─── Main Video Schema ───────────────────────────────────────
 
 export const NEETVideoSchema = z.object({
-  title: z.string(),
-  subject: z.enum(["physics", "chemistry", "biology", "math"]),
-  chapter: z.string(),
+  title: z.string().default(""),
+  subject: z.enum(["physics", "chemistry", "biology", "math"]).default("physics"),
+  chapter: z.string().default(""),
   format: z.enum(["long", "short"]).default("long"), // YouTube vs Shorts
   characters: z.array(CharacterSchema).min(1).max(3),
   themeVariant: z.number().int().min(0).max(4).default(0),
-  voiceover: VoiceoverConfigSchema.optional(),        // TTS config
-  bgMusic: z.string().optional(),                     // global background music path
+  voiceover: VoiceoverConfigSchema.default({ enabled: false }),        // TTS config
+  bgMusic: z.string().default(""),                     // global background music path
   scenes: z.array(SceneSchema).min(1),
 });
 

@@ -1,24 +1,34 @@
 /**
  * ╔══════════════════════════════════════════════════════════╗
- * ║        VOICEOVER GENERATION — ElevenLabs TTS            ║
+ * ║     VOICEOVER GENERATION — ElevenLabs & Sarvam AI       ║
  * ╠══════════════════════════════════════════════════════════╣
  * ║  Reads a video config, generates MP3 per scene,         ║
  * ║  measures durations, and outputs an updated config.     ║
  * ╚══════════════════════════════════════════════════════════╝
  *
  * USAGE:
- *   node --env-file=.env scripts/generate-voiceover.mjs <config-path> [--voice-id=VOICE_ID]
+ *   node --env-file=.env scripts/generate-voiceover.mjs <config-path> [options]
  *
- * EXAMPLE:
+ * OPTIONS:
+ *   --provider=elevenlabs|sarvam   Override TTS provider (default: from config or elevenlabs)
+ *   --voice-id=VOICE_ID            ElevenLabs voice ID override
+ *   --speaker=SPEAKER_NAME         Sarvam AI speaker override (e.g. shubh, roopa)
+ *   --force                        Regenerate audio even if files already exist
+ *
+ * EXAMPLES:
+ *   # ElevenLabs (default)
  *   node --env-file=.env scripts/generate-voiceover.mjs src/data/example-photoelectric.js
  *
- * PREREQUISITES:
- *   1. Create .env with: ELEVENLABS_API_KEY=your_key_here
- *   2. npm i mediabunny (for duration measurement)
+ *   # Sarvam AI
+ *   node --env-file=.env scripts/generate-voiceover.mjs src/data/example-photoelectric.js --provider=sarvam
  *
- * VOICE IDS (ElevenLabs):
- *   - Hindi male: search on ElevenLabs voice library
- *   - Use --voice-id flag or set in video config under voiceover.voiceId
+ *   # Sarvam AI with custom speaker
+ *   node --env-file=.env scripts/generate-voiceover.mjs src/data/my-video.js --provider=sarvam --speaker=roopa
+ *
+ * PREREQUISITES:
+ *   - ElevenLabs: ELEVENLABS_API_KEY in .env
+ *   - Sarvam AI:  SARVAM_API_KEY in .env
+ *   - npm i mediabunny (for duration measurement)
  *
  * OUTPUT:
  *   - MP3 files in public/voiceover/<video-slug>/scene-<N>.mp3
@@ -28,15 +38,6 @@
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { resolve, basename } from "path";
 
-const API_KEY = process.env.ELEVENLABS_API_KEY;
-
-if (!API_KEY) {
-  console.error("❌ Missing ELEVENLABS_API_KEY in .env file");
-  console.error("   Create a .env file at project root with:");
-  console.error("   ELEVENLABS_API_KEY=your_key_here");
-  process.exit(1);
-}
-
 // ─── Parse args ──────────────────────────────────────────────
 
 const args = process.argv.slice(2);
@@ -44,9 +45,16 @@ const configPath = args.find((a) => !a.startsWith("--"));
 const voiceIdArg = args
   .find((a) => a.startsWith("--voice-id="))
   ?.split("=")[1];
+const providerArg = args
+  .find((a) => a.startsWith("--provider="))
+  ?.split("=")[1];
+const speakerArg = args
+  .find((a) => a.startsWith("--speaker="))
+  ?.split("=")[1];
+const forceArg = args.includes("--force");
 
 if (!configPath) {
-  console.error("Usage: node --env-file=.env scripts/generate-voiceover.mjs <config-path>");
+  console.error("Usage: node --env-file=.env scripts/generate-voiceover.mjs <config-path> [--provider=elevenlabs|sarvam]");
   process.exit(1);
 }
 
@@ -68,27 +76,32 @@ async function loadConfig(path) {
 function buildSceneText(scene) {
   const lines = scene.lines || [];
   return lines
-    .map((line) => {
-      const speakerPrefix = lines.length > 1 ? `${line.speaker}: ` : "";
-      return `${speakerPrefix}${line.text}`;
-    })
+    .map((line) => line.text)
     .join("\n\n");
 }
 
-// ─── Generate a single voiceover ─────────────────────────────
+// ─── Generate audio via ElevenLabs ───────────────────────────
 
-async function generateAudio(text, voiceId, voiceoverConfig = {}) {
-  const model = voiceoverConfig.model || "eleven_multilingual_v2";
-  const stability = voiceoverConfig.stability ?? 0.5;
-  const similarityBoost = voiceoverConfig.similarityBoost ?? 0.75;
-  const style = voiceoverConfig.style ?? 0.3;
+async function generateAudioElevenLabs(text, voiceId, voiceoverConfig = {}) {
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "Missing ELEVENLABS_API_KEY in .env file. Add: ELEVENLABS_API_KEY=your_key_here"
+    );
+  }
+
+  const elConfig = voiceoverConfig.elevenlabs || {};
+  const model = elConfig.model || voiceoverConfig.model || "eleven_multilingual_v2";
+  const stability = elConfig.stability ?? voiceoverConfig.stability ?? 0.5;
+  const similarityBoost = elConfig.similarityBoost ?? voiceoverConfig.similarityBoost ?? 0.75;
+  const style = elConfig.style ?? voiceoverConfig.style ?? 0.3;
 
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
     {
       method: "POST",
       headers: {
-        "xi-api-key": API_KEY,
+        "xi-api-key": apiKey,
         "Content-Type": "application/json",
         Accept: "audio/mpeg",
       },
@@ -110,6 +123,100 @@ async function generateAudio(text, voiceId, voiceoverConfig = {}) {
   }
 
   return Buffer.from(await response.arrayBuffer());
+}
+
+// ─── Generate audio via Sarvam AI ────────────────────────────
+
+const SARVAM_MAX_CHARS = 2500; // bulbul:v3 limit
+
+function splitTextForSarvam(text, maxChars = SARVAM_MAX_CHARS) {
+  if (text.length <= maxChars) return [text];
+
+  const chunks = [];
+  const sentences = text.split(/(?<=[.!?।\n])\s+/);
+  let current = "";
+
+  for (const sentence of sentences) {
+    if ((current + " " + sentence).trim().length > maxChars) {
+      if (current.trim()) chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current = current ? current + " " + sentence : sentence;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks;
+}
+
+async function generateAudioSarvam(text, voiceoverConfig = {}) {
+  const apiKey = process.env.SARVAM_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "Missing SARVAM_API_KEY in .env file. Add: SARVAM_API_KEY=your_key_here"
+    );
+  }
+
+  const sarvamConfig = voiceoverConfig.sarvam || {};
+  const speaker = speakerArg || sarvamConfig.speaker || "shubh";
+  const model = sarvamConfig.model || "bulbul:v3";
+  const targetLanguageCode = sarvamConfig.targetLanguageCode || "hi-IN";
+  const pace = sarvamConfig.pace ?? 1.1;
+  const sampleRate = sarvamConfig.sampleRate || "48000";
+  const temperature = sarvamConfig.temperature ?? 0.6;
+
+  // Split text into chunks if it exceeds the character limit
+  const chunks = splitTextForSarvam(text);
+  const audioBuffers = [];
+
+  for (const chunk of chunks) {
+    const body = {
+      text: chunk,
+      target_language_code: targetLanguageCode,
+      speaker,
+      model,
+      pace,
+      speech_sample_rate: sampleRate,
+      output_audio_codec: "mp3",
+    };
+
+    // Only add temperature for bulbul:v3
+    if (model === "bulbul:v3") {
+      body.temperature = temperature;
+    }
+
+    // Only add pitch/loudness for bulbul:v2
+    if (model === "bulbul:v2") {
+      body.pitch = sarvamConfig.pitch ?? 0;
+      body.loudness = sarvamConfig.loudness ?? 1;
+      body.enable_preprocessing = sarvamConfig.enablePreprocessing ?? false;
+    }
+
+    const response = await fetch("https://api.sarvam.ai/text-to-speech", {
+      method: "POST",
+      headers: {
+        "api-subscription-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Sarvam AI API error (${response.status}): ${error}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.audios || data.audios.length === 0) {
+      throw new Error("Sarvam AI returned no audio data");
+    }
+
+    // Decode base64 audio
+    audioBuffers.push(Buffer.from(data.audios[0], "base64"));
+  }
+
+  // Concatenate all chunks into a single buffer
+  return Buffer.concat(audioBuffers);
 }
 
 // ─── Measure audio duration ──────────────────────────────────
@@ -147,16 +254,34 @@ async function main() {
   const outDir = resolve("public", "voiceover", slug);
   mkdirSync(outDir, { recursive: true });
 
+  // Determine provider
+  const provider =
+    providerArg || config.voiceover?.provider || "elevenlabs";
+
+  // ElevenLabs voice ID (only used when provider is elevenlabs)
   const voiceId =
     voiceIdArg ||
+    config.voiceover?.elevenlabs?.voiceId ||
     config.voiceover?.voiceId ||
     "21m00Tcm4TlvDq8ikWAM"; // ElevenLabs "Rachel" default
+
+  // Sarvam speaker name (only used when provider is sarvam)
+  const sarvamSpeaker =
+    speakerArg ||
+    config.voiceover?.sarvam?.speaker ||
+    "shubh";
 
   const FPS = 30;
   const results = [];
 
   console.log(`\n🎙️  Generating voiceover for: ${config.title}`);
-  console.log(`   Voice ID: ${voiceId}`);
+  console.log(`   Provider: ${provider}`);
+  if (provider === "elevenlabs") {
+    console.log(`   Voice ID: ${voiceId}`);
+  } else {
+    console.log(`   Speaker:  ${sarvamSpeaker}`);
+    console.log(`   Model:    ${config.voiceover?.sarvam?.model || "bulbul:v3"}`);
+  }
   console.log(`   Output:   ${outDir}/\n`);
 
   for (let i = 0; i < config.scenes.length; i++) {
@@ -173,8 +298,8 @@ async function main() {
     const filepath = resolve(outDir, filename);
     const relativePath = `voiceover/${slug}/${filename}`;
 
-    // Skip if already generated
-    if (existsSync(filepath)) {
+    // Skip if already generated (unless --force is used)
+    if (existsSync(filepath) && !forceArg) {
       console.log(`   ⏭️  Scene ${i} (${scene.type}): already exists, measuring...`);
       const duration = await measureDuration(filepath);
       const frames = Math.ceil(duration * FPS);
@@ -183,13 +308,20 @@ async function main() {
       continue;
     }
 
-    console.log(`   🔊  Scene ${i} (${scene.type}): generating...`);
+    console.log(`   🔊  Scene ${i} (${scene.type}): generating via ${provider}...`);
     try {
-      const audioBuffer = await generateAudio(
-        text,
-        voiceId,
-        config.voiceover
-      );
+      let audioBuffer;
+
+      if (provider === "sarvam") {
+        audioBuffer = await generateAudioSarvam(text, config.voiceover || {});
+      } else {
+        audioBuffer = await generateAudioElevenLabs(
+          text,
+          voiceId,
+          config.voiceover || {}
+        );
+      }
+
       writeFileSync(filepath, audioBuffer);
 
       const duration = await measureDuration(filepath);
@@ -201,8 +333,9 @@ async function main() {
       results.push(null);
     }
 
-    // Rate limiting — 2 requests per second for free tier
-    await new Promise((r) => setTimeout(r, 600));
+    // Rate limiting — be respectful of API limits
+    const delay = provider === "sarvam" ? 400 : 600;
+    await new Promise((r) => setTimeout(r, delay));
   }
 
   // ─── Print audio config to paste into data file ─────────
