@@ -1,7 +1,7 @@
 import "./index.css";
 import { Composition, Folder } from "remotion";
-import { HelloWorld } from "./HelloWorld";
-import { Logo } from "./HelloWorld/Logo";
+// import { HelloWorld } from "./HelloWorld";
+// import { Logo } from "./HelloWorld/Logo";
 import { NEETVideo } from "./NEETVideo";
 import { NEETVideoSchema, estimateTotalDuration } from "./schema";
 import { photoelectricEffect } from "./data/example-photoelectric";
@@ -87,7 +87,7 @@ export const RemotionRoot = () => {
       </Folder>
 
       {/* ─── Original Demo ────────────────────────── */}
-      <Folder name="Demo">
+      {/* <Folder name="Demo">
         <Composition
           id="HelloWorld"
           component={HelloWorld}
@@ -108,7 +108,7 @@ export const RemotionRoot = () => {
           width={1920}
           height={1080}
         />
-      </Folder>
+      </Folder> */}
     </>
   );
 };

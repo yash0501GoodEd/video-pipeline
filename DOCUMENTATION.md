@@ -1,7 +1,7 @@
 # NEET Video Pipeline — Complete Documentation
 
 > A JSON-driven, visual-first Remotion video engine for NEET educational content.
-> Write a config, drop in media assets, generate voiceovers, render cinematic videos.
+> Write a config, drop in media assets, generate voiceovers (ElevenLabs/Sarvam), render cinematic videos.
 
 ---
 
@@ -35,6 +35,7 @@
 ┌─────────────────────────────────────────────────────────┐
 │                    Root.jsx (Entry)                      │
 │  Registers Compositions → NEETVideo component           │
+│  Run Schema Parser to apply defaults preventing UI bugs │
 └────────────────────────┬────────────────────────────────┘
                          │
                          ▼
@@ -51,7 +52,7 @@
 │  2. Renders scene component (background + structural)   │
 │  3. Adds cinematic vignette overlay                     │
 │  4. Renders MediaOverlay (images/SVGs/GIFs/videos)      │
-│  5. Adds SceneLabel (lower-third concept title)          │
+│  5. Adds SceneLabel (TOP-CENTER concept banner)         │
 │  6. Plays SceneAudio (voiceover + bg music)             │
 └────────────────────────┬────────────────────────────────┘
                          │
@@ -65,7 +66,8 @@
 
 - **Visual-first**: Dialogue text (`lines[]`) is NOT rendered on screen. It exists only for voiceover generation. The viewer sees media assets, animated backgrounds, and structural elements (formulas, PYQ cards, etc.).
 - **JSON-driven**: Every video is just a different JavaScript object (config) passed as props. Zero code changes needed to make a new video.
-- **Cinematic**: Every scene gets a vignette overlay, themed animated background, frosted-glass concept label, and spring-based animations.
+- **Cinematic**: Every scene gets a vignette overlay, themed animated background, frosted-glass top-center concept label, and spring-based animations.
+- **Robust Input**: All configs are parsed through Zod schemas in `Root.jsx` to materialize defaults, preventing UI crashes in the Remotion Studio editor.
 
 ---
 
@@ -75,21 +77,18 @@
 video-pipeline/
 ├── package.json                     # Dependencies & scripts
 ├── remotion.config.js               # Remotion config (JPEG format, Tailwind v4)
-├── .env                             # ElevenLabs API key (create this)
+├── .env                             # API keys (ElevenLabs/Sarvam)
 │
 ├── public/
 │   ├── media/                       # Your visual assets
-│   │   └── photoelectric/           # Per-topic folders
-│   │       ├── wave-spread.svg
-│   │       ├── einstein-portrait.svg
-│   │       └── red-vs-violet.svg
+│   │   ├── photoelectric/           # Per-topic folders
+│   │   └── bio/                     # Biology diagrams
 │   └── voiceover/                   # Generated MP3s (auto-created)
-│       └── photoelectric-effect/
-│           ├── scene-0.mp3
-│           └── ...
+│       ├── photoelectric-effect/
+│       └── gift-vs-zift-the-tube-hack/
 │
 ├── scripts/
-│   └── generate-voiceover.mjs       # ElevenLabs TTS batch generator
+│   └── generate-voiceover.mjs       # TTS batch generator (ElevenLabs + Sarvam)
 │
 └── src/
     ├── Root.jsx                     # Remotion entry — registers compositions
@@ -101,39 +100,22 @@ video-pipeline/
     │   └── index.jsx                # Main composition (Series sequencer)
     │
     ├── data/                        # Video configs (your "scripts")
-    │   ├── _template.js             # Blank starter with full documentation
+    │   ├── _template.js             # Blank starter
     │   ├── example-photoelectric.js # Physics long-form (10 scenes)
     │   ├── example-raoult-law.js    # Chemistry long-form (7 scenes)
-    │   └── example-nand-short.js    # Physics short-form (5 scenes)
+    │   ├── example-nand-short.js    # Physics short-form (5 scenes)
+    │   └── example-gift-zift-short.js # Biology short-form (6 scenes)
     │
     ├── themes/
     │   └── index.js                 # 20 color palettes (5 per subject)
     │
     ├── components/                  # Reusable visual elements
-    │   ├── AnimatedText.jsx         # Word-by-word text animations
-    │   ├── Background.jsx           # 4 animated background variants
-    │   ├── BulletList.jsx           # Staggered bullet points
-    │   ├── FormulaDisplay.jsx       # Formula/equation cards
-    │   ├── MediaOverlay.jsx         # Images/SVGs/GIFs/Videos
-    │   ├── PYQCard.jsx              # Previous Year Question card
-    │   ├── SceneAudio.jsx           # Voiceover + background music
-    │   ├── SceneLabel.jsx           # Lower-third concept title
-    │   ├── SpeakerLabel.jsx         # Speaker avatar label
-    │   ├── TopicBadge.jsx           # Subject+Chapter badge (top)
-    │   └── TrapBadge.jsx            # Pulsing warning badge
+    │   ├── MediaOverlay.jsx         # Images/SVGs/GIFs/Videos (uncapped width)
+    │   ├── PYQCard.jsx              # Exam questions with optional images
+    │   ├── SceneLabel.jsx           # Top-center concept banner
+    │   └── ... (other components)
     │
-    └── scenes/                      # Scene-type components
-        ├── SceneRenderer.jsx        # Central orchestrator
-        ├── HookScene.jsx            # Attention-grabbing opener
-        ├── DialogueScene.jsx        # Two-character conversation
-        ├── NarratorScene.jsx        # Single-speaker explanation
-        ├── AnalogyScene.jsx         # Comparison cards
-        ├── FormulaScene.jsx         # Formula display
-        ├── TrapAlertScene.jsx       # Warning/trap scene
-        ├── PYQScene.jsx             # PYQ challenge
-        ├── SummaryScene.jsx         # Bullet-point recap
-        ├── CalculationScene.jsx     # Step-by-step math
-        └── OutroScene.jsx           # End card + CTA
+    └── scenes/                      # Scene-type components (Hook, PYQ, Formula, etc.)
 ```
 
 ---
@@ -184,14 +166,26 @@ Open `src/data/my-new-video.js` and fill in:
 ```javascript
 export const myNewVideo = {
   title: "Ohm's Law Explained",
-  subject: "physics",         // physics | chemistry | biology | math
+  subject: "physics",         
   chapter: "Current Electricity",
-  format: "long",             // long (1920×1080) | short (1080×1920)
+  format: "long",             
   characters: [
     { name: "Sir Ji", role: "teacher" },
     { name: "Ravi", role: "student" },
   ],
-  themeVariant: 1,            // 0-4, picks from 5 palettes per subject
+  themeVariant: 1,            
+  
+  // Voiceover Configuration
+  voiceover: {
+    enabled: true,
+    provider: "sarvam", // "elevenlabs" or "sarvam"
+    sarvam: {           // Provider-specific settings
+      speaker: "shubh",
+      model: "bulbul:v3",
+      pace: 1.1,
+    }
+  },
+
   scenes: [
     {
       type: "hook",
@@ -209,7 +203,7 @@ export const myNewVideo = {
       media: [
         {
           type: "image",
-          src: "media/ohms-law/resistance-diagram.png",
+          src: "/media/ohms-law/resistance-diagram.png", // absolute path from public/
           position: "center",
           width: 700,
           animation: "scaleUp",
@@ -224,14 +218,7 @@ export const myNewVideo = {
 
 ### Step 3: Add media assets
 
-Place your images/SVGs/GIFs/videos in:
-
-```
-public/media/ohms-law/
-├── resistance-diagram.png
-├── circuit-animation.gif
-└── ohm-formula.svg
-```
+Place your images/SVGs/GIFs/videos in `public/media/`.
 
 ### Step 4: Register the composition
 
@@ -240,46 +227,64 @@ Add to `src/Root.jsx`:
 ```jsx
 import { myNewVideo } from "./data/my-new-video";
 
+// Important: Parse schema to apply defaults!
+const parsedMyVideo = NEETVideoSchema.parse(myNewVideo);
+
 // Inside <Folder name="NEET-Videos">:
 <Composition
   id="Ohms-Law"
   component={NEETVideo}
   schema={NEETVideoSchema}
-  durationInFrames={estimateTotalDuration(myNewVideo.scenes, FPS)}
+  durationInFrames={estimateTotalDuration(parsedMyVideo.scenes, FPS)}
   fps={FPS}
   width={1920}
   height={1080}
-  defaultProps={myNewVideo}
+  defaultProps={parsedMyVideo}
 />
 ```
 
-### Step 5: Preview
+### Step 5: Generate Voiceover
+
+1.  **Configure API Keys:**
+    Create a `.env` file in the root directory:
+
+    ```env
+    ELEVENLABS_API_KEY=your_elevenlabs_key
+    SARVAM_API_KEY=your_sarvam_key
+    ```
+
+2.  **Run the Generator Script:**
+
+    ```bash
+    # Generate audio for your config file
+    node --env-file=.env scripts/generate-voiceover.mjs src/data/my-new-video.js --provider=sarvam
+    ```
+
+    *   **--provider**: `elevenlabs` (default) or `sarvam`.
+    *   **--force**: Overwrite existing audio files.
+
+3.  **Update Config:**
+    The script generates audio files in `public/voiceover/` and outputs the frame durations in the terminal. Update your `src/data/my-new-video.js` with these `audio` blocks:
+
+    ```javascript
+    scenes: [
+      {
+        type: "hook",
+        // ...
+        audio: {
+          src: "voiceover/my-video/scene-0.mp3",
+          durationInFrames: 345, // Copy from terminal output
+        },
+      },
+      // ...
+    ]
+    ```
+
+### Step 6: Preview & Render
 
 ```bash
 npm run dev
-# Select "Ohms-Law" from the sidebar in Remotion Studio
-```
-
-### Step 6: Generate voiceover (optional)
-
-```bash
-# Create .env with your API key(s)
-echo "ELEVENLABS_API_KEY=your_key_here" > .env
-# OR for Sarvam AI:
-echo "SARVAM_API_KEY=your_key_here" >> .env
-
-# Generate MP3s using ElevenLabs (default)
-node --env-file=.env scripts/generate-voiceover.mjs src/data/my-new-video.js
-
-# Generate MP3s using Sarvam AI
-node --env-file=.env scripts/generate-voiceover.mjs src/data/my-new-video.js --provider=sarvam
-```
-
-The script outputs `audio` config entries — paste them into each scene.
-
-### Step 7: Render
-
-```bash
+# Check preview, then render:
 npx remotion render Ohms-Law out/ohms-law.mp4
 ```
 
@@ -293,8 +298,8 @@ Every scene shares a common base:
 | ------------------ | ------------------- | ------------------------------------------ |
 | `type`             | string (required)   | Scene type discriminator                   |
 | `lines[]`          | SpeakerLine[]       | Voiceover script (NOT shown on screen)     |
-| `media[]`          | MediaItem[]         | Visual assets displayed on screen          |
-| `sceneTitle`       | string              | Concept title (lower-third label)          |
+| `media[]`          | MediaItem[]         | Visual assets display                     |
+| `sceneTitle`       | string              | Concept title (top-center banner)          |
 | `subtitle`         | string              | Secondary text under title                 |
 | `backgroundVariant`| enum                | `"gradient"` `"grid"` `"particles"` `"waves"` |
 | `layoutVariant`    | 0-3                 | Layout arrangement variation               |
@@ -383,6 +388,7 @@ Previous Year Question — animated card with options and answer reveal.
   year: 2021,
   exam: "NEET",
   question: "The wavelength of light...",
+  questionImage: "media/diagrams/question-circuit.svg", // Optional image
   options: [
     { label: "A", text: "3.0 eV", isCorrect: false },
     { label: "B", text: "3.1 eV", isCorrect: true },
@@ -454,7 +460,7 @@ The `media[]` array on any scene allows you to overlay images, SVGs, GIFs, and v
 | `type`         | enum    | required    | `"image"` `"svg"` `"gif"` `"video"`              |
 | `src`          | string  | required    | Path relative to `public/`, or full URL           |
 | `position`     | enum    | `"center"`  | See position presets below                        |
-| `width`        | number  | auto        | Width in pixels                                   |
+| `width`        | number  | auto        | Width in pixels (or omit for max-width: none)     |
 | `height`       | number  | auto        | Height in pixels                                  |
 | `animation`    | enum    | `"fadeIn"`  | Entrance animation                                |
 | `enterDelay`   | number  | `0`         | Frames to wait before appearing                   |
@@ -465,6 +471,8 @@ The `media[]` array on any scene allows you to overlay images, SVGs, GIFs, and v
 | `objectFit`    | enum    | `"contain"` | `"contain"` `"cover"` `"fill"`                    |
 | `loop`         | boolean | `true`      | For gif/video — loop playback                     |
 | `muted`        | boolean | `true`      | For video — mute audio track                      |
+
+**Note on Width**: Images are no longer capped at 700px. If you omit `width`, the image will display at its natural size (up to viewport limits), managed by `max-width: none`. This is ideal for large diagrams or full-screen overlays.
 
 ### Position Presets
 
@@ -768,6 +776,32 @@ All configs are validated via Zod. The schema is defined in `src/schema.js`.
 }
 ```
 
+### `VoiceoverConfig`
+
+```typescript
+{
+  enabled: boolean,                   // Master toggle
+  provider: "elevenlabs" | "sarvam",  // Default: "elevenlabs"
+  
+  // ElevenLabs Specific
+  elevenlabs: {
+    voiceId: string,
+    model: string,
+    stability: number,
+    similarityBoost: number,
+    style: number
+  },
+
+  // Sarvam AI Specific
+  sarvam: {
+    speaker: string,                  // e.g. "shubh", "roopa"
+    model: "bulbul:v3",
+    pace: number,                     // 0.5 - 2.0
+    targetLanguageCode: string,       // "hi-IN"
+  }
+}
+```
+
 ### NEETVideoSchema (Top Level)
 
 ```typescript
@@ -789,14 +823,12 @@ All configs are validated via Zod. The schema is defined in `src/schema.js`.
 ```javascript
 import { NEETVideoSchema, estimateSceneDuration, estimateTotalDuration } from "./schema";
 
-// Validate a config
-const result = NEETVideoSchema.safeParse(myConfig);
+// Validate a config (and apply defaults)
+const parsedConfig = NEETVideoSchema.parse(myConfig);
+// Note: Always .parse() before passing to Remotion to materialize defaults!
 
 // Get duration for a single scene (in frames)
 const frames = estimateSceneDuration(scene, 30);
-
-// Get total video duration (in frames)
-const totalFrames = estimateTotalDuration(scenes, 30);
 ```
 
 ---
@@ -841,11 +873,16 @@ Animated formula cards.
 
 ### MediaOverlay
 
-Renders all `media[]` items with position, animation, and timing. See [Media System](#6-media-system).
+Renders all `media[]` items with position, animation, and timing. 
+- **Width Handling**: If `width` is omitted, the image is rendered with `max-width: none`, allowing it to fill the screen or exceed 700px (useful for large diagrams).
+- **Centering Fit**: Combines translation and animation transforms for perfect centering.
 
 ### SceneLabel
 
-Lower-third frosted-glass concept label. Spring-animated slide-in with backdrop blur, accent-colored left border. Max width 700px.
+Frosted-glass concept banner positioned at **Top Center** (below the TopicBadge).
+- Entrance: Slide down from top + fade in.
+- Appearance: Glassmorphism effect with subject-themed accent border.
+- Purpose: Clearly states the current sub-topic or visual interaction.
 
 ### SceneAudio
 
@@ -857,6 +894,7 @@ Renders `<Audio>` components from `@remotion/media`:
 
 Previous Year Question card with:
 - Header badge (exam name + year)
+- **Question Image**: Optional diagram/circuit rendering (`questionImage` prop).
 - Question text
 - Options with staggered reveal
 - Correct answer highlight (✅) after delay
@@ -1027,7 +1065,7 @@ Use `@remotion/transitions` (already installed) to add cross-fade, slide, or wip
 Create a `ProgressBar` component that sits at the bottom of the frame, showing how far through the video the viewer is. Use `useCurrentFrame()` and `useVideoConfig()` to calculate progress.
 
 #### Improve duration estimation for voiceover
-Instead of word-count estimation, use the actual `audio.durationInFrames` value. Build a helper script that post-processes configs after voiceover generation to patch in exact durations automatically.
+**[Completed]** The `generate-voiceover.mjs` script now calculates exact durations using `mp3-duration`/`ffprobe` and outputs the JSON config. Next step: automate the injection back into the file.
 
 ---
 
@@ -1042,8 +1080,8 @@ Build a script that takes media descriptions from the config and auto-generates 
 #### Subtitle / caption track
 Generate `.srt` subtitle files from `lines[]` using the audio duration data.
 
-#### Multi-language support
-Extend the voiceover system to generate audio in multiple languages. Add a `language` field to `VoiceoverConfigSchema`.
+#### Multi-language content
+**[Partially Completed]** Sarvam AI support added for Indian languages. Next step: Build a translation pipeline for the `lines[]` text itself.
 
 #### Interactive quiz mode
 Build a React web app that pauses the video at PYQ scenes and lets the viewer tap an answer before revealing the solution.
@@ -1093,4 +1131,4 @@ Build a visual editor (React app) that lets you drag-and-drop media items on a t
 
 ---
 
-*Last updated: June 2025*
+*Last updated: Feb 19, 2026*
