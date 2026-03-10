@@ -9,6 +9,8 @@ import { PYQScene } from "./PYQScene";
 import { SummaryScene } from "./SummaryScene";
 import { CalculationScene } from "./CalculationScene";
 import { OutroScene } from "./OutroScene";
+import { QuestionDisplayScene } from "./QuestionDisplayScene";
+import { OptionAnalysisScene } from "./OptionAnalysisScene";
 import { MediaOverlay } from "../components/MediaOverlay";
 import { SceneAudio } from "../components/SceneAudio";
 import { SceneLabel } from "../components/SceneLabel";
@@ -24,6 +26,8 @@ const SCENE_MAP = {
   summary: SummaryScene,
   calculation: CalculationScene,
   outro: OutroScene,
+  questionDisplay: QuestionDisplayScene,
+  optionAnalysis: OptionAnalysisScene,
 };
 
 /**

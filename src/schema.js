@@ -102,6 +102,22 @@ const PYQOptionSchema = z.object({
   isCorrect: z.boolean().default(false),
 });
 
+// ─── NEET PG Schemas ─────────────────────────────────────────
+
+const PGOptionSchema = z.object({
+  number: z.number(),
+  text: z.string().default(""),
+  isCorrect: z.boolean().default(false),
+});
+
+const AnalyticsSchema = z.object({
+  correctPercentage: z.number().default(0),
+  option1Percentage: z.number().default(0),
+  option2Percentage: z.number().default(0),
+  option3Percentage: z.number().default(0),
+  option4Percentage: z.number().default(0),
+});
+
 // Every scene has a `type` discriminator + optional media/audio
 const BaseScene = {
   layoutVariant: z.number().int().min(0).max(3).default(0),
@@ -204,6 +220,32 @@ const OutroSceneSchema = z.object({
   ctaText: z.string().default("Subscribe for more!"),
 });
 
+// ─── NEET PG Scene Schemas ───────────────────────────────────
+
+const QuestionDisplaySceneSchema = z.object({
+  ...BaseScene,
+  type: z.literal("questionDisplay"),
+  lines: z.array(SpeakerLineSchema).min(1),
+  question: z.string().default(""),
+  options: z.array(PGOptionSchema).default([]),
+  highlights: z.array(z.string()).default([]),
+  exam: z.string().default("NEET PG"),
+  year: z.number(),
+  analytics: AnalyticsSchema.optional(),
+  answerRevealDelay: z.number().default(45),
+});
+
+const OptionAnalysisSceneSchema = z.object({
+  ...BaseScene,
+  type: z.literal("optionAnalysis"),
+  lines: z.array(SpeakerLineSchema).min(1),
+  optionNumber: z.number(),
+  optionText: z.string().default(""),
+  isCorrect: z.boolean(),
+  reasoning: z.string().default(""),
+  keyFact: z.string().default(""),
+});
+
 const SceneSchema = z.discriminatedUnion("type", [
   HookSceneSchema,
   DialogueSceneSchema,
@@ -215,6 +257,8 @@ const SceneSchema = z.discriminatedUnion("type", [
   SummarySceneSchema,
   CalculationSceneSchema,
   OutroSceneSchema,
+  QuestionDisplaySceneSchema,
+  OptionAnalysisSceneSchema,
 ]);
 
 // ─── Character Schema ────────────────────────────────────────
@@ -230,7 +274,7 @@ const CharacterSchema = z.object({
 
 export const NEETVideoSchema = z.object({
   title: z.string().default(""),
-  subject: z.enum(["physics", "chemistry", "biology", "math"]).default("physics"),
+  subject: z.enum(["physics", "chemistry", "biology", "math", "medicine"]).default("physics"),
   chapter: z.string().default(""),
   format: z.enum(["long", "short"]).default("long"), // YouTube vs Shorts
   characters: z.array(CharacterSchema).min(1).max(3),
@@ -273,6 +317,8 @@ export function estimateSceneDuration(scene, fps = 30) {
     summary: 40,
     calculation: 45,
     outro: 30,
+    questionDisplay: 60,
+    optionAnalysis: 45,
   };
 
   totalFrames += typePadding[scene.type] || 20;

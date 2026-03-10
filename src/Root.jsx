@@ -8,6 +8,8 @@ import { photoelectricEffect } from "./data/example-photoelectric";
 import { nandGateShort } from "./data/example-nand-short";
 import { raoultLaw } from "./data/example-raoult-law";
 import { bioGiftZiftShort } from "./data/example-gift-zift-short";
+import { neetpgCarpalTunnelShort } from "./data/neetpg-carpal-tunnel-short";
+import { neetpgCarpalTunnelLong } from "./data/neetpg-carpal-tunnel-long";
 
 const FPS = 30;
 
@@ -20,6 +22,8 @@ const parsedPhotoelectric = NEETVideoSchema.parse(photoelectricEffect);
 const parsedNandShort = NEETVideoSchema.parse(nandGateShort);
 const parsedRaoultLaw = NEETVideoSchema.parse(raoultLaw);
 const parsedBioGiftZift = NEETVideoSchema.parse(bioGiftZiftShort);
+const parsedCarpalShort = NEETVideoSchema.parse(neetpgCarpalTunnelShort);
+const parsedCarpalLong = NEETVideoSchema.parse(neetpgCarpalTunnelLong);
 
 // const FPS = 30;
 
@@ -83,6 +87,39 @@ export const RemotionRoot = () => {
           width={1080}
           height={1920}
           defaultProps={parsedBioGiftZift}
+        />
+      </Folder>
+
+      {/* ─── NEET PG Question Explanations ────────── */}
+      <Folder name="NEET-PG">
+        {/* Short-form: Carpal Tunnel Syndrome */}
+        <Composition
+          id="CTS-Short"
+          component={NEETVideo}
+          schema={NEETVideoSchema}
+          durationInFrames={estimateTotalDuration(
+            parsedCarpalShort.scenes,
+            FPS
+          )}
+          fps={FPS}
+          width={1080}
+          height={1920}
+          defaultProps={parsedCarpalShort}
+        />
+
+        {/* Long-form: Carpal Tunnel Syndrome — Complete Analysis */}
+        <Composition
+          id="CTS-Long"
+          component={NEETVideo}
+          schema={NEETVideoSchema}
+          durationInFrames={estimateTotalDuration(
+            parsedCarpalLong.scenes,
+            FPS
+          )}
+          fps={FPS}
+          width={1920}
+          height={1080}
+          defaultProps={parsedCarpalLong}
         />
       </Folder>
 
