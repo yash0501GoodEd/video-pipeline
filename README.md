@@ -9,6 +9,9 @@ JSON-driven, visual-first Remotion video engine for NEET educational content. Wr
   Your browser does not support the video tag.
 </video>
 
+[out/CTS-Short.mp4](out/CTS-Short.mp4)
+if video is not visible in browser.
+
 ## Quick Start
 
 ```bash
