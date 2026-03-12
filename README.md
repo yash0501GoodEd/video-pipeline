@@ -2,6 +2,13 @@
 
 JSON-driven, visual-first Remotion video engine for NEET educational content. Write a config → drop in media → generate voiceovers → render cinematic videos. No code changes needed.
 
+# Sample Video
+
+<video width="100%" controls>
+  <source src="out/CTS-Short.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## Quick Start
 
 ```bash
