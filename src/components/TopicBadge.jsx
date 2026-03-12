@@ -23,6 +23,7 @@ export const TopicBadge = ({ subject, chapter, theme }) => {
     chemistry: "🧪",
     biology: "🧬",
     math: "📐",
+    medicine: "🏥",
   };
 
   return (
